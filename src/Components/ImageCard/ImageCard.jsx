@@ -2,11 +2,11 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useRef, useState } from "react";
 
-const ImageCard = ({ image, handleSelect, isSelected, images, isDragging }) => {
+const ImageCard = ({ image, handleSelect, isSelected, images }) => {
   const { id, imageURL } = image;
   const colSpan =
     images[0].id === id
-      ? "lg:col-start-1 lg:col-end-3 lg:row-start-1 lg:row-end-3"
+      ? "col-span-2 row-span-2 "
       : "";
   const inputCheckedClass = isSelected.includes(id.toString())
     ? "opacity-100"
@@ -16,12 +16,13 @@ const ImageCard = ({ image, handleSelect, isSelected, images, isDragging }) => {
     : "opacity-100";
 
   //Drag
-  const { attributes, listeners, setNodeRef, transform, transition } =
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    cursor: isDragging ? 'grabbing' : 'grab',
   };
 
 

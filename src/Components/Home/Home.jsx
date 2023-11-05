@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ImageCard from "../ImageCard/ImageCard";
 import React from "react";
-import { DndContext, closestCenter,TouchSensor, closestCorners } from "@dnd-kit/core";
+import { DndContext, closestCenter,TouchSensor, closestCorners, MouseSensor, useSensors, useSensor, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, arrayMove, rectSortingStrategy } from "@dnd-kit/sortable";
 
 const Home = () => {
@@ -27,7 +27,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    fetch("../../../public/images.json")
+    fetch("./images.json")
       .then((res) => res.json())
       .then((data) => {
         setImages(data);
@@ -35,10 +35,15 @@ const Home = () => {
   }, []);
 
   //Drag
-  const [isDragging, setIsDragging] = useState(false);
+
+  const onDragStart = (e) => {
+    console.log(e);
+
+  }
+
+
   const onDragEnd = (e) => {
     const {active, over} = e;
-    setIsDragging(false);
     if(active.id === over.id){
         return;
     }
@@ -48,9 +53,15 @@ const Home = () => {
         return arrayMove(images, oldIndex, newIndex)
     })
   };
-  const onDragStart = () => {
-    setIsDragging(true);
-  }
+
+
+  
+
+  //touch
+  const touchSensor = useSensor(TouchSensor)
+  const mouseSensor = useSensor(MouseSensor)
+
+  const sensors = useSensors(touchSensor,mouseSensor)
   
 
   return (
@@ -65,16 +76,16 @@ const Home = () => {
         </button>
       </div>
       <hr className="mb-10" />
-      <DndContext  collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+      <DndContext sensors={sensors}
+       collisionDetection={closestCorners} onDrag={onDragStart} onDragEnd={onDragEnd}>
         <SortableContext items={images} strategy={rectSortingStrategy}>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
             {images.map((image, index) => (
               <ImageCard
                 key={image.id}
                 index={index}
                 images={images}
                 image={image}
-                isDragging={isDragging}
                 isSelected={isSelected}
                 handleSelect={handleSelect}
                 
