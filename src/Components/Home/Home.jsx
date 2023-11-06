@@ -8,18 +8,18 @@ import {
   MouseSensor,
   useSensors,
   useSensor,
-  rectIntersection,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   arrayMove,
-  horizontalListSortingStrategy,
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 
 const Home = () => {
   const [images, setImages] = useState([]);
   const [isSelected, setIsSelected] = useState([]);
+  const [activeId, setActiveId] = useState('');
 
   /**
    * loading data from images.json file
@@ -32,10 +32,25 @@ const Home = () => {
       });
   }, []);
 
+  const dragImages = [
+    "https://i.ibb.co/5smYqjc/image-1.webp",
+    "https://i.ibb.co/vZ1PV93/image-2.webp",
+    "https://i.ibb.co/Dk9Zd0x/image-3.webp",
+    "https://i.ibb.co/Kwf9qy5/image-4.webp",
+    "https://i.ibb.co/FwYNLBx/image-5.webp",
+    "https://i.ibb.co/LpLk6tb/image-6.webp",
+    "https://i.ibb.co/vj8DnTT/image-7.webp",
+    "https://i.ibb.co/8PpYc0Q/image-8.webp",
+    "https://i.ibb.co/t3Nzy8P/image-9.webp",
+    "https://i.ibb.co/ZGjZpLq/image-10.jpg",
+    "https://i.ibb.co/Mn5VdYm/image-11.jpg"
+  ]
+
   /**
    * Function for making an array which will store the selected files to be deleted
    **/
   const handleSelect = (e) => {
+    e.stopPropagation();
     // console.log(e.target.checked);
     // console.log(e.target.value);
 
@@ -44,6 +59,8 @@ const Home = () => {
     checked
       ? setIsSelected([...isSelected, value])
       : setIsSelected(isSelected.filter((id) => id !== value));
+    
+
   };
 
   /**
@@ -61,6 +78,10 @@ const Home = () => {
   /**
    * When dragging is finished the indexes are exchanged (between active element and over element) and set them to images
    */
+  function handleDragStart(e) {
+    setActiveId(e.active.id);
+  }
+  
   const onDragEnd = (e) => {
     const { active, over } = e;
     if (active.id === over.id) {
@@ -72,13 +93,25 @@ const Home = () => {
       const newIndex = images.findIndex((image) => image.id === over.id);
       return arrayMove(images, oldIndex, newIndex);
     });
+    setActiveId(null);
   };
+
+  const handleDragCancel = (e) => {
+    setActiveId(null)
+    console.log(e);
+  }
 
   //touch and mouse sensors
   const touchSensor = useSensor(TouchSensor);
   const mouseSensor = useSensor(MouseSensor);
   const sensors = useSensors(touchSensor, mouseSensor);
 
+  //Overlay control
+  const handleOverlay = (e) => {
+    e.stopPropagation();
+  }
+  
+  console.log(activeId-1);
   return (
     <div>
       <div className="flex justify-between mb-5">
@@ -104,16 +137,20 @@ const Home = () => {
         </button>
       </div>
       <hr className="mb-10" />
+      
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={onDragEnd}
+        onDragStart={handleDragStart}
+        onDragCancel={handleDragCancel}
       >
         <SortableContext items={images} strategy={rectSortingStrategy}>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 ">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5  gap-8 ">
             {images.map((image, index) => (
               <ImageCard
                 key={image.id}
+                activeId={activeId}
                 index={index}
                 image={image}
                 isSelected={isSelected}
@@ -122,6 +159,13 @@ const Home = () => {
             ))}
           </div>
         </SortableContext>
+        <DragOverlay adjustScale={true} className="z-40 pointer-events-none">
+        {activeId ? (
+            <div   className=" border-2 rounded-2xl pointer-events-none "><img src={dragImages[activeId-1]} alt="" className="rounded-2xl" /></div>
+
+        ) : null}
+      </DragOverlay>
+        
       </DndContext>
     </div>
   );
