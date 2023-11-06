@@ -1,13 +1,16 @@
+import React from "react";
+import PropTypes from "prop-types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
-const ImageCard = ({ image, handleSelect, isSelected, images }) => {
+const ImageCard = ({ image, index, handleSelect, isSelected }) => {
   const { id, imageURL } = image;
-  const colSpan =
-    images[0].id === id
-      ? "col-span-2 row-span-2 "
-      : "";
+
+  /***Conditioned Classes */
+  var colSpan = index === 0 ? " row-span-2 col-span-2" : "col-span-1";
+
+  //when checkbox is checked then selected element will be changed, these two variables have been used to do it
   const inputCheckedClass = isSelected.includes(id.toString())
     ? "opacity-100"
     : "bg-black opacity-0";
@@ -16,27 +19,30 @@ const ImageCard = ({ image, handleSelect, isSelected, images }) => {
     : "opacity-100";
 
   //Drag
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    cursor: isDragging ? 'grabbing' : 'grab',
+    cursor: isDragging ? "grabbing" : "grab",
   };
 
-
-  //handleSelect function
-  // Create a ref to capture the checkbox element
+  /**
+   * handleSelect function(dnd kit {...listeners} events were interrupt with internal events, using useRef solved that issue)
+   */
   const checkboxRef = useRef(null);
-
-  // Use a useEffect to attach the onChange handler to the checkbox
   useEffect(() => {
     if (checkboxRef.current) {
       checkboxRef.current.addEventListener("change", handleSelect);
     }
 
-    // Cleanup the event listener when the component unmounts
     return () => {
       if (checkboxRef.current) {
         checkboxRef.current.removeEventListener("change", handleSelect);
@@ -44,16 +50,15 @@ const ImageCard = ({ image, handleSelect, isSelected, images }) => {
     };
   }, [handleSelect]);
 
-  console.log(isDragging);
-
   return (
     <div
       ref={setNodeRef}
       {...attributes}
       {...listeners}
       style={style}
-      className={`${isDragging ? '' : 'group'} relative border-2 rounded-2xl ${colSpan}`}
-      draggable
+      className={`${
+        isDragging ? "" : "group"
+      } relative  border-2 rounded-2xl ${colSpan} `}
     >
       <img
         className={`rounded-2xl ${imageCheckedClass}`}
@@ -65,17 +70,25 @@ const ImageCard = ({ image, handleSelect, isSelected, images }) => {
       >
         <input
           ref={checkboxRef}
-          className="absolute z-10 left-5 top-5"
+          className="absolute z-10 left-5 top-5 h-5 w-5 "
           type="checkbox"
           value={id}
           onChange={handleSelect}
           name=""
           id=""
         />
-        <div className=" absolute z-0  inset-0 "></div>
+        <div className="  z-0  inset-0 "></div>
       </div>
     </div>
   );
+};
+
+ImageCard.propTypes = {
+  image: PropTypes.object,
+  handleSelect: PropTypes.func,
+  isSelected: PropTypes.array,
+  images: PropTypes.array,
+  index: PropTypes.any,
 };
 
 export default ImageCard;
