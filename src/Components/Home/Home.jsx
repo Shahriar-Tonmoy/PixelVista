@@ -125,7 +125,7 @@ const Home = () => {
             {isSelected.length ? (
               <p>{isSelected.length} Files Selected</p>
             ) : (
-              <h1>Galley</h1>
+              <h1>PixelVista</h1>
             )}
           </p>
         </div>
